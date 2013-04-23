@@ -4,13 +4,13 @@ module Bugsnag
       @middlewares = []
       @disabled_middleware = []
     end
-  
+
     def use(new_middleware)
       return if @disabled_middleware.include?(new_middleware)
 
       @middlewares << new_middleware
     end
-  
+
     def insert_after(after, new_middleware)
       return if @disabled_middleware.include?(new_middleware)
 
@@ -21,14 +21,14 @@ module Bugsnag
         @middlewares.insert index + 1, new_middleware
       end
     end
-  
+
     def insert_before(before, new_middleware)
       return if @disabled_middleware.include?(new_middleware)
 
       index = @middlewares.index(before) || @middlewares.length
       @middlewares.insert index, new_middleware
     end
-    
+
     def disable(*middlewares)
       @disabled_middleware += middlewares
 
@@ -39,13 +39,13 @@ module Bugsnag
     def method_missing(method, *args, &block)
       @middlewares.send(method, *args, &block)
     end
-    
-    # Runs the middleware stack and calls 
+
+    # Runs the middleware stack and calls
     def run(notification)
       # The final lambda is the termination of the middleware stack. It calls deliver on the notification
       lambda_has_run = false
       notify_lambda = lambda do |notification|
-        lambda_has_run = true        
+        lambda_has_run = true
         yield
       end
 
@@ -59,9 +59,9 @@ module Bugsnag
         # We dont notify, as we dont want to loop forever in the case of really broken middleware, we will
         # still send this notify
         Bugsnag.warn "Bugsnag middleware error: #{e}"
-        Bugsnag.log "Middleware error stacktrace: #{e.backtrace.inspect}"
+        Bugsnag.warn "Middleware error stacktrace: #{e.backtrace.inspect}"
       end
-      
+
       # Ensure that the deliver has been performed, and no middleware has botched it
       notify_lambda.call(notification) unless lambda_has_run
     end
