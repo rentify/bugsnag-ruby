@@ -247,6 +247,7 @@ module Bugsnag
 
     def stacktrace(exception)
       (exception.backtrace || caller).map do |trace|
+        Bugsnag.warn "processing line #{trace}"
         # Parse the stacktrace line
         _, file, line_str, method = trace.match(BACKTRACE_LINE_REGEX).to_a
 
